@@ -1,7 +1,8 @@
 <template>
   <div class="register-page">
     <h1>用户注册</h1>
-    <form @submit.prevent="handleNextStep">
+
+
       <div class="input-group">
         <label for="email">邮箱：</label>
         <input id="email" v-model="email" placeholder="请输入邮箱" type="email" />
@@ -10,53 +11,63 @@
       <div class="input-group">
         <label for="verification">验证码：</label>
         <input id="verification" v-model="verification" placeholder="请输入验证码" type="text" />
-        <button type="button" @click="sendVerification">发送</button>
+        <button type="submit" @click="sendVerification">发送</button>
       </div>
 
       <div class="buttons">
-        <button type="submit">下一步</button>
+        <button type="button" @click="handleNextStep">下一步</button>
       </div>
-    </form>
+
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-
+import axios from 'axios';
 // 使用 ref 创建响应式变量
 const email = ref('');
 const verification = ref('');
+const serverVerification = ref(null);
 
 // 注册方法
-async function handleRegister() {
+
+
+// 发送验证码方法
+// 发送验证码方法
+async function sendVerification() {
   try {
-    const response = await axios.post('/api/sendemail', {
+    //判断邮箱是否合法
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.value)) {
+      alert('您输入的邮箱地址不合法，请重新输入');
+      return; // 终止进一步执行
+    }
+
+    const response = await axios.post('/api/sendmail', {
       email: email.value,
     });
-    if (response.data.vefifyCode === verification.value) {
-      // 如果登录失败，显示返回的失败信息
-      alert(`注册成功！`);
-    }else{
-      //注册失败
+    if (response.data.success) {
+      serverVerification.value = response.data.verifyCode; // 假设后端返回的验证码字段为 verifyCode
+      alert('验证码已发送到您的邮箱');
+    } else {
+      alert(`发送失败：${response.data.message}`);
     }
   } catch (e) {
-    console.error('登录请求失败', e);
-    alert('登录时发生错误');
+    console.error('发送验证码请求失败', e);
+    alert('发送验证码时发生错误');
   }
 }
 
-// 发送验证码方法
-function sendVerification() {
-  // 这里可以添加发送验证码的逻辑
-  console.log('发送验证码到', email.value);
-  alert('验证码已发送到您的邮箱');
-}
-
 // 下一步方法
-function handleNextStep() {
-  // 这里可以添加下一步的逻辑
+// 下一步方法
+async function handleNextStep() {
+  if (verification.value !== serverVerification.value) {
+    alert(`验证码错误`);
+    return; // 终止进一步执行
+  }
   console.log('注册信息', { email: email.value, verification: verification.value });
   alert('注册信息已提交，请等待验证');
+  // 可以在这里添加更多的逻辑，例如跳转到其他页面或进一步处理
 }
 </script>
 

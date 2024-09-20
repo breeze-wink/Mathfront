@@ -18,7 +18,6 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8081',  // 你的 Spring Boot 服务器地址
         changeOrigin: true,  // 是否修改请求头中的来源
-        rewrite: (path) => path.replace(/^\/api/, '')  // 如果你的后端接口不以 /api 开头，可以去掉
       }
     }
   }
