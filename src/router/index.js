@@ -13,6 +13,7 @@ const routes = [
         name: 'Register',
         component: RegisterPage
     }
+    
 ];
 
 const router = createRouter({
