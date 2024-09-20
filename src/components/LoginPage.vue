@@ -19,10 +19,12 @@
 <script setup>
 import {ref} from 'vue';
 import axios from 'axios';
+import {useRouter} from "vue-router";
 
 // 使用 ref 创建响应式变量
 const username = ref('');
 const password = ref('');
+const router = useRouter();//获取路由实例
 
 // 登录方法
 async function handleLogin() {
@@ -31,11 +33,7 @@ async function handleLogin() {
             account: username.value,  // 改成 "account" 而不是 "username"
             password: password.value,
         });
-        if (response.data.success) {
-            // 获取用户的 schoolType 信息并显示
-            const schoolType = response.data.schoolType;
-            alert(`登录成功！\n学校类型：${schoolType}`);
-        } else {
+        if (!response.data.success) {
             // 如果登录失败，显示返回的失败信息
             alert(`登录失败：${response.data.message}`);
         }
@@ -48,7 +46,7 @@ async function handleLogin() {
 
 // 注册跳转
 function goToRegister() {
-    alert('跳转到注册页面');
+    router.push('/Register');
 }
 </script>
 
