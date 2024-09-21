@@ -29,11 +29,13 @@
 <script setup>
 import {ref, onBeforeUnmount} from 'vue';
 import axios from 'axios';
+import {useRouter} from "vue-router";
 
 const email = ref('');
 const verification = ref('');
 const serverVerification = ref(null);
 const countdown = ref(0);
+const router = useRouter();//获取路由实例
 let timer = null;
 
 // 发送验证码方法
@@ -80,8 +82,11 @@ async function handleNextStep() {
         alert('验证码错误');
         return;
     }
+    //跳转到用户名密码注册界面
+    await router.push({ name: 'ConfirmRegister', params: { email: email.value } });
+
     console.log('注册信息', {email: email.value, verification: verification.value});
-    alert('注册信息已提交，请等待验证');
+
 }
 
 // 清理定时器，防止内存泄漏
