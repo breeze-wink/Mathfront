@@ -35,7 +35,7 @@ const userAvatar = ref(route.params.userAvatar || '/avatars/default-avatar.png')
 
 
 async function startPractice() {
-    await router.push({name: 'Practice'});
+    await router.push({name: 'SetQuestion'});
 }
 
 async function goToResetPassword() {

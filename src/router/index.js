@@ -4,6 +4,8 @@ import RegisterPage from "@/components/RegisterPage.vue";
 import ConfirmRegisterPage from "@/components/ConfirmRegisterPage.vue";
 import ResetPasswordPage from "@/components/ResetPasswordPage.vue";
 import PersonalHomePage from "@/components/PersonalHomePage.vue";
+import SetQuestionPage from "@/components/SetQuestionPage.vue";
+import SolveQuestionPage from "@/components/SolveQuestionPage.vue";
 
 const routes = [
     {
@@ -30,6 +32,16 @@ const routes = [
         path: '/PersonalHomePage/:userName',
         name: 'PersonalHomePage',
         component: PersonalHomePage
+    },
+    {
+        path: '/SetQuestion',
+        name: 'SetQuestion',
+        component: SetQuestionPage
+    },
+    {
+        path: '/SolveQuestion',
+        name: 'SolveQuestion',
+        component: SolveQuestionPage
     }
     
 ];
