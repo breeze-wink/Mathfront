@@ -7,6 +7,7 @@
         <div class="buttons">
             <button @click="startPractice">开始做题</button>
             <button @click="goToResetPassword">修改密码</button>
+            <button @click="logout">退出登录</button>
         </div>
     </div>
 </template>
@@ -34,6 +35,11 @@ async function goToResetPassword() {
 
     await router.push({name: 'ResetPassword', params: {userName: userName.value}});
 
+}
+// 退出登录方法
+function logout() {
+    // 跳转到登录页面或其他页面
+    router.push({ name: 'Login' });
 }
 </script>
 
