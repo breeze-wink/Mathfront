@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '../components/LoginPage.vue';
 import RegisterPage from "@/components/RegisterPage.vue";
 import ConfirmRegisterPage from "@/components/ConfirmRegisterPage.vue";
+import ResetPasswordPage from "@/components/ResetPasswordPage.vue";
 
 const routes = [
     {
@@ -17,7 +18,12 @@ const routes = [
     {
         path: '/ConfirmRegister/:email', //  定义动态路由，捕获邮箱作为参数
         name: 'ConfirmRegister',
-        component: () => import('../components/ConfirmRegisterPage.vue')
+        component: ConfirmRegisterPage
+    },
+    {
+        path: '/ResetPassword',
+        name: 'ResetPassword',
+        component: ResetPasswordPage
     }
     
 ];
