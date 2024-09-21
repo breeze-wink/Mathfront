@@ -36,6 +36,9 @@ async function handleLogin() {
         if (!response.data.success) {
             // 如果登录失败，显示返回的失败信息
             alert(`登录失败：${response.data.message}`);
+        }else{
+            //向个人主页传输用户名
+            await router.push({ name: 'PersonalHomePage', params: { userName: username.value } });
         }
     } catch (e) {
         console.error('登录请求失败', e);

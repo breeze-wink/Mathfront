@@ -3,6 +3,7 @@ import LoginPage from '../components/LoginPage.vue';
 import RegisterPage from "@/components/RegisterPage.vue";
 import ConfirmRegisterPage from "@/components/ConfirmRegisterPage.vue";
 import ResetPasswordPage from "@/components/ResetPasswordPage.vue";
+import PersonalHomePage from "@/components/PersonalHomePage.vue";
 
 const routes = [
     {
@@ -21,9 +22,14 @@ const routes = [
         component: ConfirmRegisterPage
     },
     {
-        path: '/ResetPassword',
+        path: '/ResetPassword/:userName',
         name: 'ResetPassword',
         component: ResetPasswordPage
+    },
+    {
+        path: '/PersonalHomePage/:userName',
+        name: 'PersonalHomePage',
+        component: PersonalHomePage
     }
     
 ];

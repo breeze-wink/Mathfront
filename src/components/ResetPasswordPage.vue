@@ -25,25 +25,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref, watch} from 'vue';
 import axios from 'axios';
+import {useRouter} from 'vue-router';
+
 
 // 使用 ref 创建响应式变量
 const oldPassword = ref('');
 const newPassword = ref('');
 const confirmNewPassword = ref('');
+const router = useRouter();
+const userName = ref(router.currentRoute.value.params.userName);
+//实时监听路由
+watch(() => router.currentRoute.value.params.userName, (newUsername) => {
+    userName.value = newUsername;
+});
 
 // 确认修改密码方法
 async function handleResetPassword() {
-    if (newPassword.value !== confirmNewPassword.value) {
-        alert('两次输入的新密码不一致，请重新输入！');
-        return;
-    }
 
     try {
         const response = await axios.post('/api/user/resetPassword', {
 
-            //缺少用户名的传递userName
+            userName:userName.value,
             oldPassword: oldPassword.value,
             newPassword: newPassword.value,
             confirmNewPassword: confirmNewPassword.value
