@@ -6,6 +6,8 @@ import ResetPasswordPage from "@/components/ResetPasswordPage.vue";
 import PersonalHomePage from "@/components/PersonalHomePage.vue";
 import SetQuestionPage from "@/components/SetQuestionPage.vue";
 import SolveQuestionPage from "@/components/SolveQuestionPage.vue";
+import ScorePage from "@/components/ScorePage.vue"
+import ReviewPage from "@/components/ReviewPage.vue"; // 新增
 
 const routes = [
     {
@@ -42,7 +44,17 @@ const routes = [
         path: '/SolveQuestion',
         name: 'SolveQuestion',
         component: SolveQuestionPage
-    }
+    },
+    {
+        path: '/ScorePage',
+        name: 'ScorePage',
+        component: ScorePage
+    },
+    {
+        path: '/ReviewPage',
+        name: 'ReviewPage',
+        component: ReviewPage
+    },
     
 ];
 

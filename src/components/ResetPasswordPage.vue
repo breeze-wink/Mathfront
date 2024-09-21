@@ -50,9 +50,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import axios from 'axios';
-import { useRoute, useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
+import Swal from 'sweetalert2'; // 引入 SweetAlert2
+import 'sweetalert2/dist/sweetalert2.min.css'; // 引入 SweetAlert2 样式
 
 // 创建响应式变量
 const oldPassword = ref('');
@@ -65,19 +67,6 @@ const userAvatar = ref(route.params.userAvatar || '/avatars/default-avatar.png')
 
 // 确认修改密码方法
 async function handleResetPassword() {
-    // 前端验证
-    if (newPassword.value !== confirmNewPassword.value) {
-        alert('新密码和确认密码不一致');
-        return;
-    }
-
-    // 密码格式验证（包含大小写字母和数字，6-10位）
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,10}$/;
-    if (!passwordRegex.test(newPassword.value)) {
-        alert('新密码必须包含大小写字母和数字，且长度为6-10位');
-        return;
-    }
-
     try {
         const response = await axios.post('/api/user/resetPassword', {
             userName: userName.value,
@@ -85,8 +74,14 @@ async function handleResetPassword() {
             newPassword: newPassword.value,
             confirmNewPassword: confirmNewPassword.value,
         });
+
         if (response.data.success) {
-            alert('密码修改成功！');
+            await Swal.fire({
+                icon: 'success',
+                title: '密码修改成功！',
+                text: '您已成功修改密码。',
+                confirmButtonText: '确定'
+            });
             // 修改成功后跳转到个人主页
             await router.push({
                 name: 'PersonalHomePage',
@@ -96,11 +91,21 @@ async function handleResetPassword() {
                 },
             });
         } else {
-            alert(`密码修改失败：${response.data.message}`);
+            Swal.fire({
+                icon: 'error',
+                title: '修改失败',
+                text: `密码修改失败：${response.data.message}`,
+                confirmButtonText: '确定'
+            });
         }
     } catch (e) {
         console.error('修改密码请求失败', e);
-        alert('修改密码时发生错误');
+        Swal.fire({
+            icon: 'error',
+            title: '请求失败',
+            text: '修改密码时发生错误，请稍后重试。',
+            confirmButtonText: '确定'
+        });
     }
 }
 
@@ -346,8 +351,8 @@ button {
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
     width: 100%;
-    background: linear-gradient(135deg, #ff7e5f, #feb47b); /* 统一颜色 */
-    box-shadow: 0 6px 15px rgba(255, 126, 95, 0.3);
+    background: linear-gradient(135deg, #6dd5ed, #2193b0); /* 蓝色渐变 */
+    box-shadow: 0 6px 15px rgba(109, 213, 237, 0.3);
 }
 
 button i {
@@ -357,8 +362,8 @@ button i {
 /* 按钮悬浮效果 */
 button:hover {
     transform: scale(1.05); /* 悬浮时放大 */
-    box-shadow: 0 8px 25px rgba(255, 126, 95, 0.5);
-    background: linear-gradient(135deg, #feb47b, #ff7e5f); /* 悬浮时颜色反转 */
+    box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
+    background: linear-gradient(135deg, #2193b0, #6dd5ed); /* 悬浮时颜色反转 */
 }
 
 button:active {

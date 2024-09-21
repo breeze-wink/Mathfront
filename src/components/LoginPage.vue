@@ -30,9 +30,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import {useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2'; // 引入 SweetAlert2
+import 'sweetalert2/dist/sweetalert2.min.css'; // 引入 SweetAlert2 样式
 
 // 使用 ref 创建响应式变量
 const username = ref('');
@@ -48,27 +50,44 @@ async function handleLogin() {
         });
         if (!response.data.success) {
             // 如果登录失败，显示返回的失败信息
-            alert(`登录失败：${response.data.message}`);
+            Swal.fire({
+                icon: 'error',
+                title: '登录失败',
+                text: `登录失败：${response.data.message}`,
+                confirmButtonText: '确定'
+            });
         } else {
             // 向个人主页传输用户名和头像（假设后端返回头像URL）
             const userAvatar = response.data.userAvatar || '/avatars/default-avatar.png';
-            await router.push({
-                name: 'PersonalHomePage',
-                params: {
-                    userName: username.value,
-                    userAvatar: userAvatar
-                }
+            Swal.fire({
+                icon: 'success',
+                title: '登录成功！',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                router.push({
+                    name: 'PersonalHomePage',
+                    params: {
+                        userName: username.value,
+                        userAvatar: userAvatar
+                    }
+                });
             });
         }
     } catch (e) {
         console.error('登录请求失败', e);
-        alert('登录时发生错误');
+        Swal.fire({
+            icon: 'error',
+            title: '请求失败',
+            text: '登录时发生错误，请稍后重试。',
+            confirmButtonText: '确定'
+        });
     }
 }
 
 // 注册跳转
 function goToRegister() {
-    router.push({name: 'Register'});
+    router.push({ name: 'Register' });
 }
 
 // 初始化 particles.js
@@ -222,7 +241,7 @@ body {
 }
 
 /* 粒子背景 */
-.particles-bg {
+.particles-bg { /* 修正类名为 .particles-bg */
     position: absolute;
     width: 100%;
     height: 100%;
@@ -332,6 +351,18 @@ button:active {
     transform: scale(0.95);
 }
 
+/* 登录按钮特定样式 */
+.btn-login {
+    background: linear-gradient(135deg, #6dd5ed, #2193b0); /* 蓝色渐变 */
+    box-shadow: 0 6px 15px rgba(109, 213, 237, 0.3);
+}
+
+.btn-login:hover {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
+}
+
+/* 注册按钮特定样式 */
 .btn-register {
     background: linear-gradient(135deg, #28a745, #6dd5ed); /* 注册按钮特定颜色 */
     box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);

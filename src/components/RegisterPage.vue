@@ -42,7 +42,10 @@
 import { ref, onBeforeUnmount, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from "vue-router";
+import Swal from 'sweetalert2'; // 引入 SweetAlert2
+import 'sweetalert2/dist/sweetalert2.min.css'; // 引入 SweetAlert2 样式
 
+// 创建响应式变量
 const email = ref('');
 const verification = ref('');
 const serverVerification = ref(null);
@@ -54,7 +57,49 @@ let timer = null;
 async function sendVerification() {
     if (countdown.value > 0) return;
 
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.value)) {
+        Swal.fire({
+            icon: 'error',
+            title: '无效的邮箱',
+            text: '您输入的邮箱地址不合法，请重新输入。',
+            confirmButtonText: '确定'
+        });
+        return;
+    }
+
     // **立即开始倒计时**
+    startCountdown();
+
+    try {
+        const response = await axios.post('/api/mail/send', {
+            email: email.value,
+        });
+        serverVerification.value = response.data.verifyCode;
+
+        // **移除成功弹窗提示**
+        // 以前的代码：
+        // Swal.fire({
+        //     icon: 'success',
+        //     title: '验证码已发送',
+        //     text: '请查收您的邮箱中的验证码。',
+        //     timer: 2000,
+        //     showConfirmButton: false
+        // });
+
+    } catch (e) {
+        console.error('发送验证码请求失败', e);
+        Swal.fire({
+            icon: 'error',
+            title: '发送失败',
+            text: '发送验证码时发生错误，请稍后重试。',
+            confirmButtonText: '确定'
+        });
+    }
+}
+
+// 开始倒计时函数
+function startCountdown() {
     countdown.value = 60;
     timer = setInterval(() => {
         countdown.value--;
@@ -62,30 +107,17 @@ async function sendVerification() {
             clearInterval(timer);
         }
     }, 1000);
-
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email.value)) {
-        alert('您输入的邮箱地址不合法，请重新输入');
-        return;
-    }
-
-    try {
-        const response = await axios.post('/api/mail/send', {
-            email: email.value,
-        });
-        serverVerification.value = response.data.verifyCode;
-        // **不在这里启动倒计时，因为已经在点击时启动了**
-    } catch (e) {
-        console.error('发送验证码请求失败', e);
-        alert('发送验证码时发生错误');
-        // **如果需要，可以在这里处理倒计时，比如停止倒计时**
-    }
 }
 
 // 下一步方法
 async function handleNextStep() {
     if (verification.value !== serverVerification.value) {
-        alert('验证码错误');
+        Swal.fire({
+            icon: 'error',
+            title: '验证码错误',
+            text: '您输入的验证码不正确，请重新输入。',
+            confirmButtonText: '确定'
+        });
         return;
     }
     await router.push({ name: 'ConfirmRegister', params: { email: email.value } });
@@ -400,6 +432,17 @@ button:hover {
 
 button:active {
     transform: scale(0.95);
+}
+
+/* 下一步按钮特定样式 */
+.btn-next {
+    background: linear-gradient(135deg, #6dd5ed, #2193b0); /* 保持蓝色渐变 */
+    box-shadow: 0 6px 15px rgba(109, 213, 237, 0.3);
+}
+
+.btn-next:hover {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
 }
 
 /* 响应式设计 */
