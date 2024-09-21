@@ -9,7 +9,7 @@
 
             <div class="input-group">
                 <label for="newPassword">新密码：</label>
-                <input id="newPassword" v-model="newPassword" placeholder="请输入新密码" type="password" />
+                <input id="newPassword" v-model="newPassword" placeholder="包含大小写字母和数字（6-10位）" type="password" />
             </div>
 
             <div class="input-group">

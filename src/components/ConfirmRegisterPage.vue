@@ -27,14 +27,16 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
 // 使用 ref 创建响应式变量
 const username = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const route = useRoute();
+const router = useRouter();
 const email = ref(route.params.email);
+
 
 // 确认注册方法
 async function handleConfirmRegister() {
@@ -47,7 +49,7 @@ async function handleConfirmRegister() {
             email: email.value
         });
         if (response.data.legal) {
-            alert('注册成功！');
+            await router.push({ name: 'PersonalHomePage', params: { userName: username.value } });
         } else {
             alert(`注册失败：${response.data.message}`);
         }

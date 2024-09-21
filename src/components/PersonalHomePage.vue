@@ -13,16 +13,14 @@
 
 <script setup>
 import { ref,watch } from 'vue';
-import {useRouter} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 
 // 假设从登录状态或全局状态中获取用户名
 
+const route = useRoute();
 const router = useRouter();
-const userName = ref(router.currentRoute.value.params.userName);
-//实时监听路由
-watch(() => router.currentRoute.value.params.userName, (newUsername) => {
-    userName.value = newUsername;
-});
+const userName = ref(route.params.userName);
+
 // 开始做题方法
 async function startPractice() {
     // 这里可以添加跳转到做题页面的逻辑
