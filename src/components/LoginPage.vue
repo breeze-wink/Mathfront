@@ -29,7 +29,7 @@ const router = useRouter();//获取路由实例
 // 登录方法
 async function handleLogin() {
     try {
-        const response = await axios.post('/api/login', {
+        const response = await axios.post('/api/user/login', {
             account: username.value,  // 改成 "account" 而不是 "username"
             password: password.value,
         });

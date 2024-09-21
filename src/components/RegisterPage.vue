@@ -60,7 +60,7 @@ async function sendVerification() {
             return;
         }
 
-        const response = await axios.post('/api/sendmail', {
+        const response = await axios.post('/api/mail/send', {
             email: email.value,
         });
         serverVerification.value = response.data.verifyCode;
