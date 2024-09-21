@@ -41,7 +41,7 @@ async function handleConfirmRegister() {
 
     try {
         const response = await axios.post('/api/user/confirmRegister', {
-            username: username.value,
+            userName: username.value,
             password: password.value,
             confirmPassword: confirmPassword.value,
             email: email.value
