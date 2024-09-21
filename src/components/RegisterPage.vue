@@ -1,78 +1,84 @@
 <template>
-    <div class="register-page">
-        <h1>用户注册</h1>
+    <div class="container">
+        <!-- 粒子背景容器 -->
+        <div id="particles-js" class="particles-bg"></div>
 
-        <div class="input-group">
-            <label for="email">邮箱：</label>
-            <input id="email" v-model="email" placeholder="请输入邮箱" type="email" />
-        </div>
+        <div class="register-page">
+            <h1>用户注册</h1>
 
-        <div class="input-group verification-group">
-            <label for="verification">验证码：</label>
-            <input id="verification" v-model="verification" placeholder="请输入验证码" type="text" />
-            <button
-                type="button"
-                @click="sendVerification"
-                :disabled="countdown > 0"
-                class="send-button"
-            >
-                {{ countdown > 0 ? `${countdown}s` : '发送' }}
-            </button>
-        </div>
+            <form @submit.prevent="handleNextStep">
+                <div class="input-group">
+                    <label for="email">邮箱：</label>
+                    <input id="email" v-model="email" placeholder="请输入邮箱" type="email" required />
+                </div>
 
-        <div class="buttons">
-            <button type="button" @click="handleNextStep">下一步</button>
+                <div class="input-group">
+                    <label for="verification">验证码：</label>
+                    <div class="verification-group">
+                        <input id="verification" v-model="verification" placeholder="请输入验证码" type="text" required />
+                        <button
+                            type="button"
+                            @click="sendVerification"
+                            :disabled="countdown > 0"
+                            class="send-button"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                            {{ countdown > 0 ? `${countdown}s` : '发送' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-next">
+                        <i class="fas fa-arrow-right"></i> 下一步
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </template>
 
 <script setup>
-import {ref, onBeforeUnmount} from 'vue';
+import { ref, onBeforeUnmount, onMounted } from 'vue';
 import axios from 'axios';
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 
 const email = ref('');
 const verification = ref('');
 const serverVerification = ref(null);
 const countdown = ref(0);
-const router = useRouter();//获取路由实例
+const router = useRouter(); // 获取路由实例
 let timer = null;
 
 // 发送验证码方法
 async function sendVerification() {
-    // Start countdown immediately
-    if (countdown.value === 0) {
-        countdown.value = 60;
-        timer = setInterval(() => {
-            countdown.value--;
-            if (countdown.value <= 0) {
-                clearInterval(timer);
-            }
-        }, 1000);
+    if (countdown.value > 0) return;
+
+    // **立即开始倒计时**
+    countdown.value = 60;
+    timer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) {
+            clearInterval(timer);
+        }
+    }, 1000);
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.value)) {
+        alert('您输入的邮箱地址不合法，请重新输入');
+        return;
     }
 
     try {
-        // 判断邮箱是否合法
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(email.value)) {
-            alert('您输入的邮箱地址不合法，请重新输入');
-            // Reset countdown if email is invalid
-            clearInterval(timer);
-            countdown.value = 0;
-            return;
-        }
-
         const response = await axios.post('/api/mail/send', {
             email: email.value,
         });
         serverVerification.value = response.data.verifyCode;
-        // No alert on successful send
+        // **不在这里启动倒计时，因为已经在点击时启动了**
     } catch (e) {
         console.error('发送验证码请求失败', e);
         alert('发送验证码时发生错误');
-        // Reset countdown on error
-        clearInterval(timer);
-        countdown.value = 0;
+        // **如果需要，可以在这里处理倒计时，比如停止倒计时**
     }
 }
 
@@ -82,11 +88,8 @@ async function handleNextStep() {
         alert('验证码错误');
         return;
     }
-    //跳转到用户名密码注册界面
     await router.push({ name: 'ConfirmRegister', params: { email: email.value } });
-
-    console.log('注册信息', {email: email.value, verification: verification.value});
-
+    console.log('注册信息', { email: email.value, verification: verification.value });
 }
 
 // 清理定时器，防止内存泄漏
@@ -95,102 +98,335 @@ onBeforeUnmount(() => {
         clearInterval(timer);
     }
 });
+
+// 初始化 particles.js
+onMounted(() => {
+    if (window.particlesJS) {
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+    } else {
+        console.error('particlesJS 未加载');
+    }
+});
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap');
+@import 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
+
+/* 全局字体 */
+body {
+    font-family: 'Roboto Slab', serif;
+}
+
+/* 容器和背景 */
+.container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    overflow: hidden;
+    color: white;
+    transition: background 1s ease;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* 粒子背景 */
+.particles-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* 注册页样式 */
 .register-page {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 40px 50px;
-    border: 1px solid #eaeaea;
-    border-radius: 12px;
-    background-color: #fff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: white;
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 35px;
-    color: #333;
-    font-size: 24px;
+    font-size: 32px;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 25px;
+    align-items: flex-start;
 }
 
 .input-group label {
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: #555;
+    margin-bottom: 5px;
+    font-size: 18px;
 }
 
 .input-group input {
-    padding: 12px 12px;
+    width: 95%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
     font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    transition: border-color 0.3s;
+    outline: none;
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
 }
 
-.input-group input:focus {
-    border-color: #007bff;
-    outline: none;
+.input-group input::placeholder {
+    color: #999;
 }
 
 .verification-group {
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .verification-group input {
-    width: 220px;
-    padding-right: 100px; /* Space for the button */
+    flex: 3;
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+    padding-right: 10px;
 }
 
 .send-button {
-    position: absolute;
-    right: 0;
-    top: 41%;
-    height: 60%;
-    width: 60px; /* 固定宽度 */
-    padding: 0 12px;
+    flex: 1;
+    height: 100%;
     font-size: 16px;
-    background-color: #007bff;
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
+    margin-left: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    box-shadow: 0 6px 15px rgba(255, 126, 95, 0.3);
+}
+
+.send-button i {
+    margin-right: 5px;
+}
+
+.send-button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 126, 95, 0.5);
+    background: linear-gradient(135deg, #feb47b, #ff7e5f);
 }
 
 .send-button:disabled {
-    background-color: #ccc;
+    background: #ccc;
     cursor: not-allowed;
-}
-
-.send-button:not(:disabled):hover {
-    background-color: #0056b3;
+    box-shadow: none;
 }
 
 .buttons {
-    margin-top: 35px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
 }
 
-.buttons button {
-    width: 100%;
-    padding: 14px 0;
-    font-size: 18px;
-    background-color: #28a745;
+/* 统一按钮的颜色和样式 */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 30px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    width: 100%;
+    background: linear-gradient(135deg, #6dd5ed, #2193b0); /* 蓝色渐变 */
+    box-shadow: 0 6px 15px rgba(109, 213, 237, 0.3);
 }
 
-.buttons button:hover {
-    background-color: #218838;
+button i {
+    margin-right: 8px;
+}
+
+/* 按钮悬浮效果 */
+button:hover {
+    transform: scale(1.05); /* 悬浮时放大 */
+    box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
+    background: linear-gradient(135deg, #2193b0, #6dd5ed); /* 悬浮时颜色反转 */
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .register-page {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .input-group label {
+        font-size: 16px;
+    }
+
+    .input-group input {
+        font-size: 14px;
+    }
+
+    .send-button {
+        font-size: 14px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
 }
 </style>
