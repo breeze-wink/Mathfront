@@ -64,7 +64,7 @@ import { ref, onMounted } from 'vue';
 import axios from "axios";
 import { useRouter } from "vue-router";
 import Swal from 'sweetalert2'; // 引入 SweetAlert2
-import 'sweetalert2/dist/sweetalert2.min.css'; // 引入 SweetAlert2 样式
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 const questionType = ref('');
 const questionAmount = ref(10);

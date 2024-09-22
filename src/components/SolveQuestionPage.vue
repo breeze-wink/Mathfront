@@ -184,9 +184,8 @@ async function submitAnswers() {
             }
         });
 
-        // 计算分数
+        // 计算分数并保留两位小数
         const calculatedScore = (correctCount / totalQuestions.value) * 100;
-        // 保留两位小数
         const finalScore = Math.round(calculatedScore * 100) / 100;
 
         // 存储分数和选择到 sessionStorage

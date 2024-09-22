@@ -351,7 +351,7 @@ button:active {
     transform: scale(0.95);
 }
 
-/* 登录按钮特定样式 */
+/* 登录按钮 */
 .btn-login {
     background: linear-gradient(135deg, #6dd5ed, #2193b0); /* 蓝色渐变 */
     box-shadow: 0 6px 15px rgba(109, 213, 237, 0.3);
@@ -362,7 +362,7 @@ button:active {
     box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
 }
 
-/* 注册按钮特定样式 */
+/* 注册按钮 */
 .btn-register {
     background: linear-gradient(135deg, #28a745, #6dd5ed); /* 注册按钮特定颜色 */
     box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);

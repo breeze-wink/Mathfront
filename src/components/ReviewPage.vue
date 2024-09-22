@@ -249,13 +249,13 @@ h1 {
     border: 2px solid #fff;
 }
 
-/* 样式类：用户选择的正确答案 */
+/* 正确答案 */
 .selected-correct {
     background: linear-gradient(135deg, #28a745, #34c759);
     border: 2px solid #fff;
 }
 
-/* 样式类：用户选择的错误答案 */
+/* 错误答案 */
 .selected-incorrect {
     background: linear-gradient(135deg, #ff4e50, #f9d423);
     border: 2px solid #fff;

@@ -57,7 +57,7 @@ async function handleConfirmRegister() {
         });
 
         if (response.data.legal) {
-            // 假设后端返回用户头像URL
+            // 后端返回用户头像URL
             const userAvatar = response.data.userAvatar || '/avatars/default-avatar.png';
             await Swal.fire({
                 icon: 'success',

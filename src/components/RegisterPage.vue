@@ -76,17 +76,6 @@ async function sendVerification() {
             email: email.value,
         });
         serverVerification.value = response.data.verifyCode;
-
-        // **移除成功弹窗提示**
-        // 以前的代码：
-        // Swal.fire({
-        //     icon: 'success',
-        //     title: '验证码已发送',
-        //     text: '请查收您的邮箱中的验证码。',
-        //     timer: 2000,
-        //     showConfirmButton: false
-        // });
-
     } catch (e) {
         console.error('发送验证码请求失败', e);
         Swal.fire({
