@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <!-- 粒子背景容器 -->
-        <div id="particles-js" class="particles-bg"></div>
-
         <div class="set-question-page">
             <h1>题目设置</h1>
 
@@ -37,30 +34,26 @@
                     placeholder="10-30"
                     min="10"
                     max="30"
-                    :disabled="isLoading"
                 />
             </div>
 
             <!-- 确认按钮 -->
             <div class="buttons">
-                <button class="btn-confirm" @click="handleConfirm" :disabled="isLoading">
-                    <i class="fas fa-check"></i> 确认
+                <button
+                    class="btn-confirm"
+                    @click="handleConfirm"
+                    :disabled="isLoading">
+                    <i class="fas fa-check" v-if="!isLoading"></i>
+                    <span v-if="!isLoading">确认</span>
+                    <span v-else>生成中...</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- 提交加载遮罩层 -->
-        <div v-if="isLoading" class="loading-overlay">
-            <div class="loading-container">
-                <div class="spinner"></div>
-                <p>生成题目中，请稍候...</p>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import axios from "axios";
 import { useRouter } from "vue-router";
 import Swal from 'sweetalert2'; // 引入 SweetAlert2
@@ -77,23 +70,24 @@ function selectType(type) {
     questionType.value = type;
 }
 
-// 将题目数据存储到 sessionStorage 并导航到下一个页面
-function sendQuestion() {
-    sessionStorage.setItem('questions', JSON.stringify(questions.value));
-    sessionStorage.setItem('number', questionAmount.value);
-    router.push({ name: 'SolveQuestion' });
+// 延迟函数，用于在重试之间添加延迟（可选）
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // 确认按钮点击处理函数
 async function handleConfirm() {
+    console.log('handleConfirm 被触发');
+
     // 前端验证
-    if (!questionType.value || !questionAmount.value) {
+    if (!questionType.value) {
         Swal.fire({
             icon: 'warning',
             title: '信息不完整',
             text: '请完整选择题目类型和输入题目数量。',
             confirmButtonText: '确定'
         });
+        console.log('验证失败：信息不完整');
         return;
     }
 
@@ -104,149 +98,79 @@ async function handleConfirm() {
             text: '题目数量应在10到30之间。',
             confirmButtonText: '确定'
         });
+        console.log('验证失败：题目数量错误');
         return;
     }
 
-    try {
-        isLoading.value = true; // 开启加载状态
+    isLoading.value = true; // 开启加载状态
 
-        const response = await axios.post('/api/question/generate', {
-            type: questionType.value,
-            number: questionAmount.value
-        });
+    const maxRetries = 3; // 最大重试次数
+    let attempt = 0;
+    let success = false;
 
-        // 检查后端响应
-        if (response.data && response.data.questions) {
-            questions.value = response.data.questions;
-            sendQuestion();
-        } else {
-            throw new Error('后端未返回题目数据');
+    while (attempt < maxRetries && !success) {
+        try {
+            console.log(`发送请求到后端，尝试次数：${attempt + 1}`);
+            const response = await axios.post('/api/question/generate', {
+                type: questionType.value,
+                number: questionAmount.value
+            }, { timeout: 10000 }); // 设置超时时间为10秒
+            console.log('收到后端响应:', response.data);
+
+            // 检查后端响应
+            if (response.data && response.data.questions) {
+                questions.value = response.data.questions;
+                console.log('设置题目数据并导航');
+
+                // 将数据存储到 sessionStorage
+                sessionStorage.setItem('questions', JSON.stringify(questions.value));
+                sessionStorage.setItem('number', questionAmount.value);
+
+                // 关闭加载状态
+                isLoading.value = false;
+
+                // 导航到 SolveQuestion 页面，不再 await 以避免阻塞
+                router.push({ name: 'SolveQuestion' })
+                    .then(() => {
+                        console.log('成功导航到 SolveQuestion 页面');
+                    })
+                    .catch(error => {
+                        console.error('导航到 SolveQuestion 页面失败:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: '导航失败',
+                            text: '无法进入下一页，请重试！',
+                            confirmButtonText: '确定'
+                        });
+                    });
+
+                success = true;
+            } else {
+                console.log('后端未返回题目数据');
+                throw new Error('后端未返回题目数据');
+            }
+        } catch (error) {
+            attempt++;
+            console.error(`题目生成失败，第 ${attempt} 次尝试:`, error);
+            if (attempt >= maxRetries) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '题目生成失败',
+                    text: '无法生成题目，请重试！',
+                    confirmButtonText: '确定'
+                });
+            } else {
+                console.log('将在 2 秒后进行重试...');
+                await delay(2000); // 等待 2 秒后重试
+            }
         }
-    } catch (error) {
-        console.error('题目生成失败:', error);
-        Swal.fire({
-            icon: 'error',
-            title: '题目生成失败',
-            text: '无法生成题目，请重试！',
-            confirmButtonText: '确定'
-        });
-    } finally {
-        isLoading.value = false; // 关闭加载状态
+    }
+
+    // 如果未成功，确保关闭加载状态
+    if (!success) {
+        isLoading.value = false;
     }
 }
-
-// 初始化 particles.js
-onMounted(() => {
-    if (window.particlesJS) {
-        particlesJS('particles-js', {
-            "particles": {
-                "number": {
-                    "value": 80,
-                    "density": {
-                        "enable": true,
-                        "value_area": 800
-                    }
-                },
-                "color": {
-                    "value": "#ffffff"
-                },
-                "shape": {
-                    "type": "circle",
-                    "stroke": {
-                        "width": 0,
-                        "color": "#000000"
-                    },
-                    "polygon": {
-                        "nb_sides": 5
-                    }
-                },
-                "opacity": {
-                    "value": 0.5,
-                    "random": false,
-                    "anim": {
-                        "enable": false,
-                        "speed": 1,
-                        "opacity_min": 0.1,
-                        "sync": false
-                    }
-                },
-                "size": {
-                    "value": 3,
-                    "random": true,
-                    "anim": {
-                        "enable": false,
-                        "speed": 40,
-                        "size_min": 0.1,
-                        "sync": false
-                    }
-                },
-                "line_linked": {
-                    "enable": true,
-                    "distance": 150,
-                    "color": "#ffffff",
-                    "opacity": 0.4,
-                    "width": 1
-                },
-                "move": {
-                    "enable": true,
-                    "speed": 6,
-                    "direction": "none",
-                    "random": false,
-                    "straight": false,
-                    "out_mode": "out",
-                    "bounce": false,
-                    "attract": {
-                        "enable": false,
-                        "rotateX": 600,
-                        "rotateY": 1200
-                    }
-                }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": {
-                    "onhover": {
-                        "enable": true,
-                        "mode": "repulse"
-                    },
-                    "onclick": {
-                        "enable": true,
-                        "mode": "push"
-                    },
-                    "resize": true
-                },
-                "modes": {
-                    "grab": {
-                        "distance": 400,
-                        "line_linked": {
-                            "opacity": 1
-                        }
-                    },
-                    "bubble": {
-                        "distance": 400,
-                        "size": 40,
-                        "duration": 2,
-                        "opacity": 8,
-                        "speed": 3
-                    },
-                    "repulse": {
-                        "distance": 200,
-                        "duration": 0.4
-                    },
-                    "push": {
-                        "particles_nb": 4
-                    },
-                    "remove": {
-                        "particles_nb": 2
-                    }
-                }
-            },
-            "retina_detect": true
-        });
-    } else {
-        console.error('particlesJS 未加载');
-    }
-});
 </script>
 
 <style scoped>
@@ -283,14 +207,6 @@ body {
     100% {
         background-position: 0% 50%;
     }
-}
-
-/* 粒子背景 */
-.particles-bg {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
 }
 
 /* 题目设置页面样式 */
@@ -435,43 +351,9 @@ h1 {
 }
 
 .btn-confirm:disabled {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
     box-shadow: none;
-}
-
-/* 提交加载遮罩层 */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.loading-container {
-    text-align: center;
-    color: white;
-}
-
-.spinner {
-    border: 8px solid rgba(255, 255, 255, 0.2);
-    border-top: 8px solid #34c759;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* 响应式设计 */
