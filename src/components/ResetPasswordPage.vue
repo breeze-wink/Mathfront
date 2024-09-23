@@ -4,6 +4,10 @@
     <div id="particles-js" class="particles-bg"></div>
 
     <div class="reset-password-page">
+      <!-- 返回按钮 -->
+      <button class="back-button" @click="goBack" aria-label="返回">
+        <i class="fas fa-arrow-left"></i>
+      </button>
       <h1>修改密码</h1>
       <form @submit.prevent="handleResetPassword">
         <div class="input-group">
@@ -50,11 +54,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import { ref, onBeforeUnmount, onMounted } from 'vue';
 import axios from 'axios';
-import {useRoute, useRouter} from 'vue-router';
-import Swal from 'sweetalert2'; // 引入 SweetAlert2
-import 'sweetalert2/dist/sweetalert2.min.css'; // 引入 SweetAlert2 样式
+import { useRoute, useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 // 创建响应式变量
 const oldPassword = ref('');
@@ -64,6 +68,7 @@ const router = useRouter();
 const route = useRoute();
 const userName = ref(route.params.userName);
 const userAvatar = ref(route.params.userAvatar || '/avatars/default-avatar.png');
+let timer = null;
 
 // 确认修改密码方法
 async function handleResetPassword() {
@@ -108,6 +113,16 @@ async function handleResetPassword() {
     });
   }
 }
+
+// 返回个人主页方法
+function goBack() {
+  router.push({ name: 'PersonalHomePage' });
+}
+
+// 清理定时器，防止内存泄漏
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+});
 
 // 初始化 particles.js
 onMounted(() => {
@@ -281,6 +296,7 @@ body {
   color: white;
   opacity: 0;
   animation: fadeIn 1s forwards;
+  position: relative; /* 使内部绝对定位的元素相对于此容器 */
 }
 
 @keyframes fadeIn {
@@ -327,6 +343,30 @@ form {
 
 .input-group input::placeholder {
   color: #999;
+}
+
+/* 返回按钮样式 */
+.back-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 35px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.2); /* 半透明背景，融入页面 */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+  z-index: 1;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
 }
 
 /* 按钮布局 */
@@ -402,6 +442,14 @@ button:active {
   button {
     font-size: 14px;
     padding: 10px 15px;
+  }
+
+  .back-button {
+    top: 10px;
+    left: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
   }
 }
 </style>
